@@ -1,0 +1,43 @@
+# Copy to config.yaml and edit.
+database: listings.db
+user_agent: "biz-scraper/0.1 (your name; your@email)"   # identify yourself honestly
+delay_seconds: 3          # per-host pause between requests
+respect_robots: true      # keep this on
+
+filters:
+  min_price: 100000
+  max_price: 2000000
+  min_cash_flow: 75000
+  locations: []                       # e.g. ["CA", "Texas"]; empty = anywhere
+  include_keywords: ["recurring", "established", "owner retiring", "absentee"]
+  exclude_keywords: ["franchise resale", "startup"]
+
+sources:
+  # --- Marketplaces / broker sites: selector-driven, no code needed. ---
+  # IMPORTANT: check each site's Terms of Service before enabling. Many marketplaces
+  # prohibit automated scraping; prefer their email alerts/RSS/official APIs where offered.
+  # Selectors below are PLACEHOLDERS: inspect the real page (browser dev tools) and fill in.
+  - name: example_broker
+    type: html
+    enabled_note: "replace URLs/selectors before use"
+    start_urls: ["https://broker.example.com/listings"]
+    item: "div.listing-card"
+    next_page: "a.next"
+    max_pages: 3
+    fields:
+      title: "h3 a"
+      url: {selector: "h3 a", attr: href}
+      price: ".asking-price"
+      revenue: ".gross-revenue"
+      cash_flow: ".cash-flow"
+      location: ".location"
+      description: ".summary"
+
+  # --- Off-market sourcing: official Google Places API (needs GOOGLE_PLACES_API_KEY) ---
+  - name: places_offmarket
+    type: places
+    api_key_env: GOOGLE_PLACES_API_KEY
+    max_per_query: 20
+    queries:
+      - "HVAC company in Austin TX"
+      - "commercial landscaping company in Phoenix AZ"
